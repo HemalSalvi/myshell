@@ -1,4 +1,6 @@
-//myshell.c by Hemal Salvi and Al Madireddy
+// myshell.c
+// Hemal Salvi - <netid>
+// Al Madireddy - anm170030
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +80,7 @@ int main(void) {
   pid_t pid, wpid;
   char cwd[1024];
 
-  printf("Welcome"); 
+  printf("Welcome\n"); 
   
   while (running == 1) {
     getcwd(cwd, sizeof(cwd));
@@ -114,7 +116,7 @@ int main(void) {
 
     pid = fork();
     if (pid < 0) {
-      printf("errored in fork\n");
+      printf("%serrored in fork\n", KRED);
       exit(-1);
     } 
     else if (pid == 0) {
@@ -141,7 +143,7 @@ int main(void) {
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
       } 
       else {
-        printf("Running command in background with pid: %d", pid);
+        printf("Running command in background with pid: %d\n", pid);
       }
     }
     counter++;
