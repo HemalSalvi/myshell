@@ -80,11 +80,10 @@ int main(void) {
   printf("Welcome"); 
   while (running == 1) {
     printf("\n"); 
-    // prompt **in color**
     printf("%s{shell:~}%s > %s", KCYN, KYEL, KNRM); 
     
+    // read line and check that it's not "exit"
     input = read_line();
-
     if (!strcmp("exit", input)) {
       running = 0;
       continue;
@@ -93,41 +92,50 @@ int main(void) {
     int scannedLength = strlen(input);
     int printOutput = 1;
 
-    // set the flag to print or not
     if (input[scannedLength - 1] == '&') {
-      input[scannedLength - 1] = '\0'; // remove the ampersand before passing to exec;
+      input[scannedLength - 1] = '\0';
       printOutput = 0;
     }
 
+    // tokenize the input string and split on whitespace
+    // so that args can be passed to execvp
     args = split_line(input);
+ 
     pid = fork();
     if (pid < 0) {
       printf("errored in fork\n");
       exit(-1);
     } 
     else if (pid == 0) {
+      // child process code: execute the command
+      // Write to /dev/null to prevent output of 
+      // command if it's running in background with '&'
       if (!printOutput) {
         int fd = open("/dev/null", O_WRONLY);
 
-        dup2(fd, 1);    /* make stdout a copy of fd (> /dev/null) */
-        dup2(fd, 2);    /* ...and same with stderr */
-        close(fd);      /* close fd */
+        dup2(fd, 1);  // stdout
+        dup2(fd, 2);  // stderr
+        close(fd);
       }
+
+      // pass in the command and the arguments to run
       execvp(args[0], args);
       exit(0);
     } 
     else {
+      // parent process code
       if (printOutput) {
         do {
           wpid = waitpid(pid, &status, WUNTRACED);
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-      } else {
+      } 
+      else {
         printf("Running command in background with pid: %d", pid);
       }
     }
     counter++;
   }
 
-  printf("%sTerminating shell, %i commands inputted\n%s", KYEL, counter, KNRM);
+  printf("%sTerminating shell,%s %i %scommands inputted\n%s", KYEL, KCYN, counter, KYEL, KNRM);
   exit(0);
 }
