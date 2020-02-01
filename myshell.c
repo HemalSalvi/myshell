@@ -1,5 +1,5 @@
 // myshell.c
-// Hemal Salvi - <netid>
+// Hemal Salvi - hns170002
 // Al Madireddy - anm170030
 
 #include <stdio.h>
