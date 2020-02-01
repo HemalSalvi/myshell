@@ -76,15 +76,20 @@ int main(void) {
   char* input;
   char** args;
   pid_t pid, wpid;
+  char cwd[1024];
 
   printf("Welcome"); 
+  
   while (running == 1) {
-    printf("\n"); 
-    printf("%s{shell:~}%s > %s", KCYN, KYEL, KNRM); 
+    getcwd(cwd, sizeof(cwd));
+    printf("%s{shell:%s%s%s}%s > %s", KCYN, KYEL, cwd, KCYN, KYEL, KNRM); 
     
     // read line and check that it's not "exit"
     input = read_line();
-    if (!strcmp("exit", input)) {
+    if (strlen(input) == 0) {
+      continue;
+    }
+    if (strcmp("exit", input) == 0) {
       running = 0;
       continue;
     }
@@ -100,7 +105,13 @@ int main(void) {
     // tokenize the input string and split on whitespace
     // so that args can be passed to execvp
     args = split_line(input);
- 
+    if (strcmp(args[0], "cd") == 0) {
+      strcpy(cwd, args[1]);
+      chdir(cwd);
+      counter++;
+      continue;
+    }
+
     pid = fork();
     if (pid < 0) {
       printf("errored in fork\n");
