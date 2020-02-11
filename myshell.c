@@ -1,6 +1,8 @@
 // myshell.c
 // Hemal Salvi - hns170002
 // Al Madireddy - anm170030
+// Assumptions: every input, even empty, counts as a command. 
+//    "exit" does not count towards input 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +14,6 @@
 #define SIGHUP  1   /* Hangup the process */ 
 #define SIGINT  2   /* Interrupt the process */ 
 #define SIGQUIT 3   /* Quit the process */ 
-
 
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
@@ -79,11 +80,10 @@ int main(void) {
   char** args;
   pid_t pid, wpid;
   char cwd[1024];
-  char homedirectory[1024];
+  char* homedirectory;
 	
   printf("Welcome\n");
-  getcwd(homedirectory, sizeof(homedirectory));
-  printf("%s", homedirectory);
+  homedirectory = getenv("HOME");
 
   while (running == 1) {
     getcwd(cwd, sizeof(cwd));
@@ -111,17 +111,23 @@ int main(void) {
     // so that args can be passed to execvp
     args = split_line(input);
 
-    if (strcmp(args[0], "cd") == 0) { //change directory if cd is inputted
-   		strcpy(cwd, homedirectory); //initially set to homedirectory
-      if (!(args[1] == NULL)) //switch to args[1] if there is an argument
-	    {
-		    strcpy(cwd, args[1]);
-	    }
-      chdir(cwd); //change directories
-	    counter++;
-	    continue;
+    // cd is supported as a built-in command. It will not be passed
+    // to exec and we handle the logic of changing working directory 
+    // based on argument to cd. If no argument is provided, it defaults 
+    // to the home directory (where the shell was launched from). 
+    if (strcmp(args[0], "cd") == 0) { 
+      strcpy(cwd, homedirectory);
+      if (!(args[1] == NULL)) {
+        strcpy(cwd, args[1]); 
+      }
+      chdir(cwd);
+
+      counter++;
+      continue;
     }
 
+    // assuming the command wasn't "exit" or "cd" we continue
+    // with fork and exec 
     pid = fork();
     if (pid < 0) {
       printf("%serrored in fork\n", KRED);
