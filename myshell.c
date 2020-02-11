@@ -1,7 +1,7 @@
 // myshell.c
 // Hemal Salvi - hns170002
 // Al Madireddy - anm170030
-// Assumptions: every input, even empty, counts as a command. 
+// Assumptions: every input, except empty, counts as a command. 
 //    "exit" does not count towards input 
 
 #include <stdio.h>
@@ -146,7 +146,11 @@ int main(void) {
       }
 
       // pass in the command and the arguments to run
-      execvp(args[0], args);
+      int s = execvp(args[0], args);
+      // detect error running exec, and print Command not Found
+      if (s < 0) {
+        printf("%sCommand not found%s\n", KRED, KNRM);
+      }
       exit(0);
     } 
     else {
