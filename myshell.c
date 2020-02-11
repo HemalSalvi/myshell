@@ -79,9 +79,12 @@ int main(void) {
   char** args;
   pid_t pid, wpid;
   char cwd[1024];
+  char homedirectory[1024];
+	
+  printf("Welcome\n");
+  getcwd(homedirectory, sizeof(homedirectory));
+  printf("%s", homedirectory);
 
-  printf("Welcome\n"); 
-  
   while (running == 1) {
     getcwd(cwd, sizeof(cwd));
     printf("%s{shell:%s%s%s}%s > %s", KCYN, KYEL, cwd, KCYN, KYEL, KNRM); 
@@ -107,11 +110,16 @@ int main(void) {
     // tokenize the input string and split on whitespace
     // so that args can be passed to execvp
     args = split_line(input);
-    if (strcmp(args[0], "cd") == 0) {
-      strcpy(cwd, args[1]);
-      chdir(cwd);
-      counter++;
-      continue;
+
+    if (strcmp(args[0], "cd") == 0) { //change directory if cd is inputted
+   		strcpy(cwd, homedirectory); //initially set to homedirectory
+      if (!(args[1] == NULL)) //switch to args[1] if there is an argument
+	    {
+		    strcpy(cwd, args[1]);
+	    }
+      chdir(cwd); //change directories
+	    counter++;
+	    continue;
     }
 
     pid = fork();
